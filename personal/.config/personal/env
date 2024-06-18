@@ -1,0 +1,20 @@
+#!/usr/bin/env zsh
+
+export STOW_FOLDERS="bin,nvim,tmux,personal,zsh"
+
+die () {
+    echo >&2 "$@"
+    exit 1
+}
+
+addToPath() {
+    if [[ "$PATH" != *"$1"* ]]; then
+        export PATH=$PATH:$1
+    fi
+}
+
+addToPathFront() {
+    if [[ "$PATH" != *"$1"* ]]; then
+        export PATH=$1:$PATH
+    fi
+}
