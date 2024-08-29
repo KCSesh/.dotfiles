@@ -18,6 +18,8 @@ export DOTFILES=$HOME/.dotfiles
 
 addToPathFront $HOME/.local/scripts
 addToPathFront $HOME/.local/bin
+[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+
 #addToPathFront $HOME/.local/go/bin
 #addToPathFront $HOME/go/bin
 
