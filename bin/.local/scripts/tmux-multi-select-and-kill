@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+# Tree-style fzf window killer matching choose-tree format
+
+DELIM=$'\x1f'
+tmpfile=$(mktemp)
+
+tmux list-sessions -F '#{session_created} #{session_name}' | sort -n | cut -d' ' -f2- | while read -r session; do
+  win_count=$(tmux list-windows -t "=$session" -F x | wc -l)
+  attached=$(tmux display -t "=$session" -p '#{?session_attached,(attached),}')
+  printf '%s%s  - %s: %s windows %s\n' "$session" "$DELIM" "$session" "$win_count" "$attached" >> "$tmpfile"
+
+  total=$win_count
+  idx=0
+  tmux list-windows -t "=$session" \
+    -F '#{session_name}:#{window_index} #{window_index}: #{window_name}#{?window_active,*,}: "#{pane_title}" [#{session_name}]' \
+    | while read -r line; do
+      idx=$((idx + 1))
+      target="${line%% *}"
+      display="${line#* }"
+      if [ "$idx" -eq "$total" ]; then
+        printf '%s%s   \xe2\x94\x94\xe2\x94\x80> %s\n' "$target" "$DELIM" "$display" >> "$tmpfile"
+      else
+        printf '%s%s   \xe2\x94\x9c\xe2\x94\x80> %s\n' "$target" "$DELIM" "$display" >> "$tmpfile"
+      fi
+    done
+done
+
+selected=$(cat "$tmpfile" \
+  | fzf --multi \
+    --layout=reverse \
+    --with-nth=2.. \
+    --delimiter="$DELIM" \
+    --prompt='Kill windows> ' \
+    --header='TAB select | ENTER kill | ESC cancel | ctrl-a all | ctrl-d none' \
+    --bind='ctrl-a:select-all,ctrl-d:deselect-all,ctrl-g:last' \
+    --preview='target=$(echo {} | cut -d"'"$DELIM"'" -f1); [[ "$target" == *:* ]] && tmux capture-pane -t "$target" -p 2>/dev/null' \
+    --preview-window=right:50% \
+  | cut -d"$DELIM" -f1)
+
+rm -f "$tmpfile"
+
+[ -z "$selected" ] && exit 0
+
+# Kill sessions first (no colon), then windows in reverse order
+echo "$selected" | grep -v ':' | while read -r target; do
+  tmux kill-session -t "=$target" 2>/dev/null
+done
+echo "$selected" | grep ':' | sort -t: -k2 -rn | while read -r target; do
+  tmux kill-window -t "$target" 2>/dev/null
+done

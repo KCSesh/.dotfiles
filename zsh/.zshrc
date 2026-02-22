@@ -70,6 +70,7 @@ ZSH_THEME="robbyrussell"
 # Custom plugins may be added to $ZSH_CUSTOM/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
+export ZSH_DISABLE_COMPFIX=true
 plugins=(git zsh-autosuggestions zsh-syntax-highlighting)
 #plugins=(git)
 
@@ -194,6 +195,9 @@ export GOSUMDB=sum.golang.org
 ZSH_HIGHLIGHT_STYLES[suffix-alias]=fg=#e69138,underline
 ZSH_HIGHLIGHT_STYLES[precommand]=fg=#e69138,underline
 ZSH_HIGHLIGHT_STYLES[arg0]=fg=#e69138
+ZSH_HIGHLIGHT_STYLES[globbing]=fg=#32CD32
+ZSH_HIGHLIGHT_STYLES[comment]=fg=#ff84ff
+ZSH_HIGHLIGHT_STYLES[bracket-level-1]=fg=#ff84ff
 ## Functions/methods
 
 #PROMPT='%F{cyan}%n%f@%F{green}%m%f %F{blue}%~%f '
@@ -221,7 +225,7 @@ PROMPT="
 #PROMPT='%{$fg_bold[red]%}➜ %{$fg_bold[green]%}%p %{$fg[cyan]%}%c %{$fg_bold[blue]%}$(git_prompt_info)%{$fg_bold[blue]%} % %{$reset_color%}
 PROMPT+='%{$fg_bold[cyan]%}➜ %{$fg_bold[red]%}%p%{$fg_bold[blue]%}$(git_prompt_info)%{$fg_bold[blue]%}% %{$reset_color%}'
 VI_MODE_RESET_PROMPT_ON_MODE_CHANGE=true
-#alias vim=nvim
+alias vim=nvim
 
 
 zstyle ':completion:*' matcher-list 'm:{a-z}={A-Z}'
@@ -230,5 +234,16 @@ zstyle ':completion:*' matcher-list 'm:{a-z}={A-Z}'
 bindkey '^[[Z' autosuggest-accept  # shift + tab  | autosuggest
 
 bindkey -s ^f "tmux-sessionizer\n"
+
+# fzf shell integration (Ctrl+R history, Ctrl+T files, Alt+C cd)
+eval "$(fzf --zsh)"
+
+export EDITOR=nvim
+export GPG_TTY=$(tty)
+
+# Go
+export GOROOT=/usr/local/go
+export GOPATH=$HOME/go
+export PATH=$PATH:$GOPATH/bin:/usr/local/go/bin
 
 source ~/.zsh_profile
